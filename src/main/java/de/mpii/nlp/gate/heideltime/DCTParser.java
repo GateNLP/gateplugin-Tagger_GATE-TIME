@@ -54,7 +54,7 @@ import java.util.logging.Logger;
  *     
  * Implementation details:
  * - TimeML format can be read 
- *   (<DCT><TIMEX3 functionInDocument="CREATION_TIME" value="2016-03-16">...<\/TIMEX3><\/DCT>)
+ *   (&lt;DCT&gt;&lt;TIMEX3 functionInDocument="CREATION_TIME" value="2016-03-16"&gt;...&lt;\/TIMEX3&gt;&lt;\/DCT&gt;)
  * - document creation time can be provided manually
  * 
  * @author Jannik Strötgen 
