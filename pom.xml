@@ -29,6 +29,13 @@
 		</license>
 	</licenses>
 
+	<repositories>
+		<repository>
+			<id>jitpack.io</id>
+			<url>https://jitpack.io</url>
+		</repository>
+	</repositories>
+
 	<dependencies>
 		<!-- add any other libraries your plugin depends on. Any other GATE plugins 
 			you depend on at compile time should use the provided scope -->
@@ -37,11 +44,19 @@
 			<artifactId>uimaj-core</artifactId>
 			<version>2.8.1</version>
 		</dependency>
-		<dependency>
+
+		<!-- we should be using this version but it currently doesn't work and won't 
+			until my pull request is accepted -->
+		<!-- <dependency>
 			<groupId>com.github.heideltime</groupId>
 			<artifactId>heideltime</artifactId>
 			<version>2.2.1</version>
-		</dependency>
+		</dependency> -->
+		<dependency>
+		    <groupId>com.github.greenwoodma</groupId>
+	    	<artifactId>heideltime</artifactId>
+	    	<version>d7fa97207d</version>
+		</dependency>		
 	</dependencies>
 
 </project>

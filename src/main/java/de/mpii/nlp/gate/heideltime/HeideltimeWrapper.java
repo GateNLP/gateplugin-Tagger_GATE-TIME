@@ -55,8 +55,6 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.thoughtworks.xstream.InitializationException;
-
 import de.unihd.dbs.heideltime.standalone.CLISwitch;
 import de.unihd.dbs.heideltime.standalone.Config;
 import de.unihd.dbs.heideltime.standalone.DocumentType;
@@ -79,6 +77,7 @@ import gate.FeatureMap;
 import gate.Resource;
 import gate.annotation.NodeImpl;
 import gate.creole.ExecutionException;
+import gate.creole.ResourceInstantiationException;
 import gate.creole.ResourceReference;
 import gate.creole.metadata.CreoleParameter;
 import gate.creole.metadata.CreoleResource;
@@ -127,26 +126,6 @@ public class HeideltimeWrapper extends gate.creole.AbstractLanguageAnalyser {
 	private HeidelTime heidelTime;
 	private static Logger logger = Logger.getLogger("HeidelTimeWrapper");
 	
-  private static class NoExitSecurityManager extends SecurityManager {
-
-    @Override
-    public void checkPermission(Permission p) {
-      // allow anything
-    }
-
-    @Override
-    public void checkPermission(Permission p, Object context) {
-      // allow anything.
-    }
-
-    @Override
-    public void checkExit(int status) {
-      super.checkExit(status);
-      throw new ExitException(status);
-    }
-
-  }
-	
 	protected static class ExitException extends SecurityException {
 		
 		public final int status;
@@ -171,61 +150,46 @@ public class HeideltimeWrapper extends gate.creole.AbstractLanguageAnalyser {
 	 * The document creation time has to be set separately.
 	 */
 	@Override
-	public Resource init() throws InitializationException{
+  public Resource init() throws ResourceInstantiationException {
 
-    // TODO fix HeidelTime so it doesn't do System.exit() other than in the main
-    // method so we can call it without worrying about the JVM closing with no
-    // visible error messages. Once that's done we can remove this rather
-    // horrendous hack.
-	  SecurityManager securityManager = null;
-		try {
-  	  securityManager = System.getSecurityManager();
-		  System.setSecurityManager(new NoExitSecurityManager());
-  		
-  		// without this initialization, calling jcas factory fails
-  		try {
-        hts = new HeidelTimeStandalone(language, documentType, OutputType.XMI, 
-        		Files.fileFromURL(configFile.toURL()).getAbsolutePath());
-      } catch(IllegalArgumentException | IOException e) {
-        throw new InitializationException("HeidelTimeWrapper could not be initialized",e);
-      }
-			
-  		// create a UIMA jcas factory
-  		try {
-  			heidelTime = new HeidelTime();
-  			heidelTime.initialize(new UimaContextImpl(language, documentType, CLISwitch.VERBOSITY2.getIsActive()));
-  			logger.log(Level.INFO, "HeidelTime initialized");
-  		} catch (Exception e) {
-  			e.printStackTrace();
-  			logger.log(Level.WARNING, "HeidelTime could not be initialized");
-  			throw new InitializationException("HeidelTimeWrapper could not be initialized. " +
-  					"Something wrong with the setup?");
-  		}
-  		
-  		try {
-  			TypeSystemDescription[] descriptions = new TypeSystemDescription[] {
-  					UIMAFramework
-  					.getXMLParser()
-  					.parseTypeSystemDescription(
-  							new XMLInputSource(
-  									this.getClass()
-  									.getClassLoader()
-  									.getResource(
-  											Config.get(Config.TYPESYSTEMHOME)))) };
-  			jcasFactory = new JCasFactoryImpl(descriptions);
-  		} catch (Exception e) {
-  			e.printStackTrace();
-  			logger.log(Level.WARNING, "JCas factory could not be initialized");
-  			throw new InitializationException("HeidelTimeWrapper could not be initialized. " +
-  					"Something wrong with the setup?");
-  		}
-  		return this;
-		}
-    finally {
-      System.setSecurityManager(securityManager);
+    // without this initialization, calling jcas factory fails
+    try {
+      hts = new HeidelTimeStandalone(language, documentType, OutputType.XMI,
+          configFile.toURL());
+    } catch(IllegalArgumentException | IOException e) {
+      throw new ResourceInstantiationException(
+          "HeidelTimeWrapper could not be initialized", e);
     }
-	}
-    
+
+    // create a UIMA jcas factory
+    try {
+      heidelTime = new HeidelTime();
+      heidelTime.initialize(new UimaContextImpl(language, documentType,
+          CLISwitch.VERBOSITY2.getIsActive()));
+      logger.log(Level.INFO, "HeidelTime initialized");
+    } catch(Exception e) {
+      e.printStackTrace();
+      logger.log(Level.WARNING, "HeidelTime could not be initialized");
+      throw new ResourceInstantiationException(
+          "HeidelTimeWrapper could not be initialized. "
+              + "Something wrong with the setup?");
+    }
+
+    try {
+      TypeSystemDescription[] descriptions = new TypeSystemDescription[]{
+          UIMAFramework.getXMLParser().parseTypeSystemDescription(
+              new XMLInputSource(this.getClass().getClassLoader()
+                  .getResource(Config.get(Config.TYPESYSTEMHOME))))};
+      jcasFactory = new JCasFactoryImpl(descriptions);
+    } catch(Exception e) {
+      e.printStackTrace();
+      logger.log(Level.WARNING, "JCas factory could not be initialized");
+      throw new ResourceInstantiationException(
+          "HeidelTimeWrapper could not be initialized. "
+              + "Something wrong with the setup?");
+    }
+    return this;
+  }    
     
     @Override
 	public void cleanup() {
@@ -663,8 +627,8 @@ public class HeideltimeWrapper extends gate.creole.AbstractLanguageAnalyser {
 	    return dctAnnotation;
 	}
 	
-	@CreoleParameter(comment="Location of the 'resources/config.props' file (distributed with HeidelTime standalone)", 
-	                 defaultValue="config.props")
+	@CreoleParameter(comment="Location of the 'config.props' file (distributed with HeidelTime standalone)", 
+	                 defaultValue="resources/config.props")
 	public void setConfigFile(ResourceReference configFile) {
 	    this.configFile = configFile;
 	}
