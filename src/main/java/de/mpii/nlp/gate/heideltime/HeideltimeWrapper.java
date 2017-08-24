@@ -24,22 +24,10 @@
 
 package de.mpii.nlp.gate.heideltime;
 
-import gate.Annotation;
-import gate.AnnotationSet;
-import gate.Factory;
-import gate.FeatureMap;
-import gate.Resource;
-import gate.annotation.NodeImpl;
-import gate.creole.ExecutionException;
-import gate.creole.metadata.CreoleParameter;
-import gate.creole.metadata.CreoleResource;
-import gate.creole.metadata.Optional;
-import gate.creole.metadata.RunTime;
-import gate.util.Files;
-import gate.util.OffsetComparator;
-
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.Permission;
 import java.text.DateFormat;
@@ -84,6 +72,20 @@ import de.unihd.dbs.uima.types.heideltime.Dct;
 import de.unihd.dbs.uima.types.heideltime.Sentence;
 import de.unihd.dbs.uima.types.heideltime.Timex3;
 import de.unihd.dbs.uima.types.heideltime.Token;
+import gate.Annotation;
+import gate.AnnotationSet;
+import gate.Factory;
+import gate.FeatureMap;
+import gate.Resource;
+import gate.annotation.NodeImpl;
+import gate.creole.ExecutionException;
+import gate.creole.ResourceReference;
+import gate.creole.metadata.CreoleParameter;
+import gate.creole.metadata.CreoleResource;
+import gate.creole.metadata.Optional;
+import gate.creole.metadata.RunTime;
+import gate.util.Files;
+import gate.util.OffsetComparator;
 
 
 /** 
@@ -181,8 +183,12 @@ public class HeideltimeWrapper extends gate.creole.AbstractLanguageAnalyser {
 		  System.setSecurityManager(new NoExitSecurityManager());
   		
   		// without this initialization, calling jcas factory fails
-  		hts = new HeidelTimeStandalone(language, documentType, OutputType.XMI, 
-  				Files.fileFromURL(configFile).getAbsolutePath());
+  		try {
+        hts = new HeidelTimeStandalone(language, documentType, OutputType.XMI, 
+        		Files.fileFromURL(configFile.toURL()).getAbsolutePath());
+      } catch(IllegalArgumentException | IOException e) {
+        throw new InitializationException("HeidelTimeWrapper could not be initialized",e);
+      }
 			
   		// create a UIMA jcas factory
   		try {
@@ -659,12 +665,21 @@ public class HeideltimeWrapper extends gate.creole.AbstractLanguageAnalyser {
 	
 	@CreoleParameter(comment="Location of the 'resources/config.props' file (distributed with HeidelTime standalone)", 
 	                 defaultValue="config.props")
-	public void setConfigFile(URL configFile) {
+	public void setConfigFile(ResourceReference configFile) {
 	    this.configFile = configFile;
 	}
-	public URL getConfigFile() {
+	public ResourceReference getConfigFile() {
 		  return configFile;
 	}
+	
+	@Deprecated
+  public void setConfigFile(URL configFile) {
+    try {
+      this.setConfigFile(new ResourceReference(configFile));
+    } catch (URISyntaxException e) {
+      throw new RuntimeException("Error converting URL to ResourceReference", e);
+    }
+  }
 	
 	@RunTime
 	@CreoleParameter(comment="The name of the 'Token' annotation type", defaultValue="Token")
@@ -727,7 +742,7 @@ public class HeideltimeWrapper extends gate.creole.AbstractLanguageAnalyser {
 	private String outputASName;
 	private Language language;
 	private DocumentType documentType;
-	private URL configFile;
+	private ResourceReference configFile;
 	private String dctAnnotation;
 	private Boolean doPreprocessing;
 	private String tokenAnnotation;
