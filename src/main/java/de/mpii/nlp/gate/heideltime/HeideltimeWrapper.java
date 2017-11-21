@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.security.Permission;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -83,7 +82,6 @@ import gate.creole.metadata.CreoleParameter;
 import gate.creole.metadata.CreoleResource;
 import gate.creole.metadata.Optional;
 import gate.creole.metadata.RunTime;
-import gate.util.Files;
 import gate.util.OffsetComparator;
 
 
@@ -288,7 +286,9 @@ public class HeideltimeWrapper extends gate.creole.AbstractLanguageAnalyser {
 	    }
 
 		gate.Document doc = getDocument();
-		doc.getFeatures().clear();
+		
+		//no idea why it was doing this but it's a terrible idea
+		//doc.getFeatures().clear();
 		
 		String output = "";
 		Document d = null;
