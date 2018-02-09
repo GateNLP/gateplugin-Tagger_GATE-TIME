@@ -29,6 +29,26 @@
 		</license>
 	</licenses>
 
+	<organization>
+		<name>GATE</name>
+		<url>http://gate.ac.uk</url>
+	</organization>
+
+	<developers>
+		<developer>
+			<id>gate-team</id>
+			<name>GATE Team</name>
+			<email>gate-developers@lists.sourceforge.net</email>
+		</developer>
+	</developers>
+
+	<scm>
+		<connection>scm:git:git://github.com/GateNLP/gateplugin-Tagger_GATE-TIME.git</connection>
+		<developerConnection>scm:git:git@github.com:GateNLP/gateplugin-Tagger_GATE-TIME.git</developerConnection>
+		<url>https://github.com/GateNLP/gateplugin-Tagger_GATE-TIME</url>
+	</scm>
+
+
 	<repositories>
 		<repository>
 			<id>jitpack.io</id>
