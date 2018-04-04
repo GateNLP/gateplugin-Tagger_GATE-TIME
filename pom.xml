@@ -18,6 +18,9 @@
 	<groupId>uk.ac.gate.plugins</groupId>
 	<artifactId>tagger-gate-time</artifactId>
 	<version>8.5-SNAPSHOT</version>
+	
+	<name>Tagger: GATE-Time</name>
+	<description>Tools for detecting and normalising date and time expressions</description>
 
 	<licenses>
 		<license>
