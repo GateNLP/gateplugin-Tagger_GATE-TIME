@@ -192,6 +192,10 @@ public class HeideltimeWrapper extends gate.creole.AbstractLanguageAnalyser {
     @Override
 	public void cleanup() {
 		
+      if(jcas != null) {
+        jcas.release();
+        jcas = null;
+      }
 	    System.setSecurityManager(null);
 	    
 	}
@@ -427,10 +431,10 @@ public class HeideltimeWrapper extends gate.creole.AbstractLanguageAnalyser {
 //			!(sentenceAnnotation.equals("")) ||
 //			!(posAnnotation.equals(""))) {
 
-			// create a jcas for the document
-			JCas jcas = null;
 			try {
-				jcas = jcasFactory.createJCas();
+				if(jcas == null) {
+				  jcas = jcasFactory.createJCas();
+				}
 				jcas.setDocumentText(doc.getContent().toString());
 				logger.log(Level.FINE, "CAS object generated");
 			} catch (Exception e) {
@@ -551,6 +555,8 @@ public class HeideltimeWrapper extends gate.creole.AbstractLanguageAnalyser {
 		    			"\nLooked for token attribute for pos information called: " + posAnnotation +
 		    			"\nPlease provide correct annotation names." +
 		    			"\nProbably the pos feature name is wrong.");
+		    } finally {
+		      jcas.reset();
 		    }
 		}
 	}
@@ -712,4 +718,6 @@ public class HeideltimeWrapper extends gate.creole.AbstractLanguageAnalyser {
 	private String tokenAnnotation;
 	private String sentenceAnnotation;
 	private String posAnnotation;
+
+  private JCas jcas;
 }
