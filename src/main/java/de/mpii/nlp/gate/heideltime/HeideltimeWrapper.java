@@ -719,5 +719,5 @@ public class HeideltimeWrapper extends gate.creole.AbstractLanguageAnalyser {
 	private String sentenceAnnotation;
 	private String posAnnotation;
 
-  private JCas jcas;
+  private transient JCas jcas;
 }
